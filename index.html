@@ -145,23 +145,382 @@
     font-size: 20px;
     margin: 6px 0;
   }
-  hr.divider {
-    border: none;
-    border-top: 1px dashed #3a4058;
-    max-width: 1150px;
-    margin: 50px auto;
+
+  /* ===== кликабельные имена внутри полей "Родители/Дети/Возлюбленные" ===== */
+  .lnk {
+    display: inline-block;
+    color: #f2d16b;
+    background: rgba(242,209,107,0.08);
+    border: 1px solid rgba(242,209,107,0.35);
+    border-radius: 10px;
+    padding: 0 7px;
+    margin: 1px 1px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .lnk:hover {
+    background: rgba(242,209,107,0.22);
+    border-color: #f2d16b;
+  }
+
+  /* ===== ВКЛАДКИ ===== */
+  .tabs-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    background: #14161d;
+    padding: 14px 10px;
+    margin: -30px -15px 30px -15px;
+    border-bottom: 1px solid #3a4058;
+  }
+  .tab-btn {
+    background: #232838;
+    color: #b9c1de;
+    border: 1px solid #4a5170;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { border-color: #f2d16b; color: #f2d16b; }
+  .tab-btn.active { background: #f2d16b; color: #1b1f2a; border-color: #f2d16b; font-weight: bold; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ===== ВИЗУАЛЬНОЕ ДРЕВО (вкладка 2) — стиль пергамента ===== */
+  .scroll-wrap {
+    background: #ece3d3;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(196,164,108,0.15), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(196,164,108,0.15), transparent 50%);
+    border-radius: 4px;
+    padding: 50px 40px 70px 40px;
+    width: fit-content;
+    margin: 0 auto;
+    box-shadow: 0 0 60px rgba(0,0,0,0.4);
+  }
+  .parch-title {
+    text-align: center;
+    color: #3c2f1e;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 40px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  .parch-sub {
+    text-align: center;
+    color: #6b5638;
+    font-size: 13px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .parch-orn {
+    text-align: center;
+    color: #b08d4f;
+    font-size: 18px;
+    letter-spacing: 10px;
+    margin-bottom: 40px;
+  }
+  .gen-badge {
+    display: block;
+    margin: 46px auto 26px auto;
+    width: fit-content;
+    background: #ded0b0;
+    color: #5c4826;
+    border: 1px solid #b08d4f;
+    border-radius: 4px;
+    padding: 6px 22px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* org-chart CSS-only tree */
+  .ptree, .ptree ul {
+    padding-top: 20px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  .ptree ul { padding-top: 24px; }
+  .ptree li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    list-style-type: none;
+    position: relative;
+    padding: 24px 10px 0 10px;
+  }
+  .ptree > li { padding-top: 0; }
+  .ptree li::before, .ptree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #b08d4f;
+    width: 50%;
+    height: 24px;
+  }
+  .ptree li::after { right: auto; left: 50%; border-left: 2px solid #b08d4f; }
+  .ptree li:only-child::after, .ptree li:only-child::before { display: none; }
+  .ptree li:only-child { padding-top: 0; }
+  .ptree li:first-child::before, .ptree li:last-child::after { border: 0 none; }
+  .ptree li:last-child::before { border-right: 2px solid #b08d4f; border-radius: 0 5px 0 0; }
+  .ptree li:first-child::after { border-radius: 5px 0 0 0; }
+  .ptree ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #b08d4f;
+    width: 0;
+    height: 24px;
+  }
+  .ptree li > .box-row { display: flex; align-items: center; gap: 0; }
+  .pbox {
+    display: inline-block;
+    background: #faf5e9;
+    border: 1.5px solid #8a6a3a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    min-width: 88px;
+    text-align: center;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.12);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .pbox.small { min-width: 66px; padding: 8px 10px; border-radius: 10px; }
+  .pbox .pname {
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    color: #3c2f1e;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .pbox.small .pname { font-size: 12px; }
+  .pbox .prole {
+    font-size: 9.5px;
+    color: #8a7350;
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+  }
+  .pbox.tree-flash {
+    animation: treeFlashPulse 1.6s ease;
+    border-color: #c0392b !important;
+  }
+  @keyframes treeFlashPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(192,57,43,0.9); }
+    100% { box-shadow: 0 0 0 22px rgba(192,57,43,0); }
+  }
+  .couple-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #b08d4f;
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+  .heart-divider {
+    text-align: center;
+    color: #b08d4f;
+    font-size: 20px;
+    letter-spacing: 10px;
+    margin-top: 50px;
+  }
+  .parch-note {
+    text-align: center;
+    color: #6b5638;
+    font-size: 12px;
+    margin-top: 14px;
+    font-style: italic;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 10px;
+  }
+
+  /* ===== ПАНЕЛЬ ПОЛНОГО ОПИСАНИЯ (открывается по клику на карточку в дереве) ===== */
+  .pbox { cursor: pointer; }
+  .info-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 90;
+  }
+  .info-backdrop.open { display: block; }
+  .info-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 380px;
+    max-width: 88vw;
+    height: 100%;
+    background: #181b26;
+    border-left: 1px solid #4a5170;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.5);
+    z-index: 91;
+    padding: 24px 20px;
+    overflow-y: auto;
+    transition: right 0.28s ease;
+    font-family: 'Georgia', serif;
+    color: #d8dcea;
+  }
+  .info-panel.open { right: 0; }
+  .info-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: #232838;
+    color: #b9c1de;
+    border: 1px solid #4a5170;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .info-close:hover { border-color: #f2d16b; color: #f2d16b; }
+  .info-name {
+    color: #f2d16b;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 30px 2px 0;
+  }
+  .info-role {
+    color: #9aa1b5;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .info-text {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .info-fam {
+    display: block;
+    margin-top: 10px;
+    color: #a9b0c9;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .info-fam b { color: #cfd6ea; }
+  .info-tag {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 2px 8px;
+    background: #2c3346;
+    border: 1px solid #4a5170;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #9ecbb0;
+  }
+
+  /* ===== ZOOM ===== */
+  .zoom-controls {
+    position: sticky;
+    top: 54px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #14161d;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+  }
+  .zoom-btn {
+    background: #232838;
+    color: #b9c1de;
+    border: 1px solid #4a5170;
+    border-radius: 14px;
+    padding: 6px 14px;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .zoom-btn:hover { border-color: #f2d16b; color: #f2d16b; }
+  .zoom-hint { color: #7f869c; font-size: 11px; }
+  .zoom-viewport {
+    width: 100%;
+    height: calc(100vh - 150px);
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    background: #0f1117;
+  }
+  .zoom-viewport.dragging { cursor: grabbing; }
+  .zoom-content {
+    transform-origin: 0 0;
+    width: max-content;
+    padding: 20px;
   }
 </style>
 </head>
 <body>
 
+<div class="tabs-bar">
+  <button class="tab-btn active" id="btnTab1" onclick="showTab('tab1', this)">📋 Полный список с описаниями</button>
+  <button class="tab-btn" id="btnTab2" onclick="showTab('tab2', this); renderFullTree(); fitToScreen(); window.scrollTo({top:0, behavior:'instant'});">🌳 Визуальное древо</button>
+</div>
+
+<div id="tab1" class="tab-panel active">
+
 <h1>Полное древо греческих богов и героев</h1>
-<p class="sub">Нажми на имя — увидишь описание, родителей, детей и возлюбленных</p>
+<p class="sub">Нажми на имя — увидишь описание. Имена в полях «Родители / Дети / Возлюбленные» — тоже кнопки: клик открывает визуальное древо на вкладке рядом и подсвечивает этого персонажа.</p>
 <p class="legend">Древо идёт сверху вниз по поколениям: чем ниже секция — тем моложе персонаж</p>
 <p class="source">Факты со значком 🎬 взяты из документального сериала «Мифы древней Греции» (ARTE, реж. Сильвен Бержер и др., 20 эпизодов о богах и героях)</p>
 
 <div id="tree"></div>
-<div id="tree2"></div>
+
+</div>
+
+<div id="tab2" class="tab-panel">
+
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="zoomBy(1.2)">➕ Приблизить</button>
+    <button class="zoom-btn" onclick="zoomBy(0.8)">➖ Отдалить</button>
+    <button class="zoom-btn" onclick="zoomReset()">⟳ Показать всё</button>
+    <span class="zoom-hint">колесо мыши / щипок — зум от курсора, зажать и тащить — перемещение</span>
+  </div>
+
+  <div class="zoom-viewport" id="zoomViewport">
+    <div class="zoom-content" id="zoomContent">
+      <div class="scroll-wrap">
+        <div class="parch-title">Семейное<br>генеалогическое<br>древо</div>
+        <div class="parch-sub" id="parchModeLabel">ВСЕ БОГИ, ТИТАНЫ, ДУХИ И ГЕРОИ ГРЕЦИИ</div>
+        <div class="parch-orn">✦ ❧ ✦</div>
+
+        <div id="backBtnWrap" style="display:none; text-align:center; margin-bottom:30px;">
+          <button class="zoom-btn" onclick="renderFullTree(); fitToScreen();" style="font-size:14px; padding:8px 18px;">🔙 Показать всё древо целиком</button>
+        </div>
+
+        <div id="treeDynamicArea"></div>
+
+        <div class="heart-divider">♥</div>
+        <p class="parch-note">Курсивом в подписях отмечены тематические, не строго родственные связи (наставничество, соперничество, жертвы). Нажми на любую карточку — откроется полное описание с кликабельными родителями, детьми и возлюбленными.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-backdrop" id="infoBackdrop" onclick="closeInfoPanel()"></div>
+  <div class="info-panel" id="infoPanel"></div>
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
 
 <script>
 // у каждого персонажа есть: имя, роль, родители, дети, возлюбленные (не сокращаем!), описание
@@ -172,13 +531,13 @@ const generations = [
     title: "Изначальные боги (Протогенои) — возникли первыми, без родителей",
     gods: [
       { name: "Хаос", role: "пустота, начало всего", parents: "нет — существовал изначально", children: "Гея, Тартар, Эреб, Никта", lovers: "—", text: "Изначальная пустота, из которой возникло всё. Не бог в привычном смысле, а само первичное состояние мира. По сериалу: «в начале была тьма, и тьма породила хаос — пустоту, полную мрака».", tag: true },
-      { name: "Гея", role: "Мать-Земля", parents: "возникла из Хаоса", children: "Уран, Понт, Титаны, Циклопы, Гекатонхейры, гиганты, Тифон (от Тартара), Эринии", lovers: "Уран, Понт, Тартар", text: "Богиня земли. Одинокая, она родила себе в пару Урана — небо. Эрос вложил в Урана желание, и от их долгой близости родились титаны, циклопы и гекатонхейры. Позже Гея сама подговорила Кроноса свергнуть отца, дав ему кремниевый серп; а после победы Зевса над титанами, разгневанная на внука, наслала на него Гигантов, а затем и чудовище Тифона.", tag: true },
-      { name: "Уран", role: "Небо", parents: "сын Геи (родился без отца)", children: "Титаны, Циклопы, Гекатонхейры (все от Геи), Эринии и Афродита (из его крови/семени)", lovers: "Гея", text: "Бог неба, супруг своей матери Геи. Держал детей в её чреве, не давая им выйти на свет, за что был оскоплён сыном Кроносом. Из его пролитой в море крови родилась Афродита.", tag: true },
-      { name: "Тартар", role: "бездна, место наказания", parents: "сын Хаоса", children: "Тифон (от союза с Геей)", lovers: "Гея", text: "Мрачная бездна глубоко под землёй. По сериалу, тройная медная стена окружает пленников Тартара; если бросить вниз наковальню, она долетит до дна за 9 дней. Там были заточены циклопы, откуда их освободил Зевс, а позже туда же попадают Сизиф, Тантал, Иксион и другие проклятые смертные.", tag: true },
-      { name: "Никта", role: "Ночь", parents: "дочь Хаоса", children: "Танатос, Гипнос, Мойры, Немезида, Эрида и другие тёмные божества", lovers: "Эреб", text: "Богиня ночи, породившая множество сущностей: Смерть, Сон, Судьбу и других." },
-      { name: "Эреб", role: "Мрак", parents: "сын Хаоса", children: "Эфир и Гемера (от союза с Никтой)", lovers: "Никта", text: "Олицетворение первичной тьмы, супруг своей сестры Никты." },
-      { name: "Понт", role: "Море", parents: "сын Геи (родился без отца)", children: "Нерей, Тавмант, Форкий, Кето, Эврибия", lovers: "Гея", text: "Древнее олицетворение моря, сын Геи, отец морских божеств." },
-      { name: "Эрос (изначальный)", role: "первичное влечение", parents: "возник вместе с Хаосом", children: "—", lovers: "—", text: "Одна из древнейших сил. По сериалу, именно он «внушил Урану таинственное волнение» и заставил его соединиться с Геей — так началось рождение первых богов.", tag: true },
+      { name: "Гея", role: "Мать-Земля", parents: "Хаос", children: "Уран, Понт, Титаны, Циклопы, Гекатонхейры, гиганты, Тифон (от Тартара), Эринии", lovers: "Уран, Понт, Тартар", text: "Богиня земли. Одинокая, она родила себе в пару Урана — небо. Эрос вложил в Урана желание, и от их долгой близости родились титаны, циклопы и гекатонхейры. Позже Гея сама подговорила Кроноса свергнуть отца, дав ему кремниевый серп; а после победы Зевса над титанами, разгневанная на внука, наслала на него Гигантов, а затем и чудовище Тифона.", tag: true },
+      { name: "Уран", role: "Небо", parents: "Гея (родился без отца)", children: "Титаны, Циклопы, Гекатонхейры (все от Геи), Эринии и Афродита (из его крови/семени)", lovers: "Гея", text: "Бог неба, супруг своей матери Геи. Держал детей в её чреве, не давая им выйти на свет, за что был оскоплён сыном Кроносом. Из его пролитой в море крови родилась Афродита.", tag: true },
+      { name: "Тартар", role: "бездна, место наказания", parents: "Хаос", children: "Тифон (от союза с Геей)", lovers: "Гея", text: "Мрачная бездна глубоко под землёй. По сериалу, тройная медная стена окружает пленников Тартара; если бросить вниз наковальню, она долетит до дна за 9 дней. Там были заточены циклопы, откуда их освободил Зевс, а позже туда же попадают Сизиф, Тантал, Иксион и другие проклятые смертные.", tag: true },
+      { name: "Никта", role: "Ночь", parents: "Хаос", children: "Танатос, Гипнос, Мойры, Немезида, Эрида и другие тёмные божества", lovers: "Эреб", text: "Богиня ночи, породившая множество сущностей: Смерть, Сон, Судьбу и других." },
+      { name: "Эреб", role: "Мрак", parents: "Хаос", children: "Эфир и Гемера (от союза с Никтой)", lovers: "Никта", text: "Олицетворение первичной тьмы, супруг своей сестры Никты." },
+      { name: "Понт", role: "Море", parents: "Гея (родился без отца)", children: "Нерей, Тавмант, Форкий, Кето, Эврибия", lovers: "Гея", text: "Древнее олицетворение моря, сын Геи, отец морских божеств." },
+      { name: "Эрос (изначальный)", role: "первичное влечение", parents: "Хаос", children: "—", lovers: "—", text: "Одна из древнейших сил. По сериалу, именно он «внушил Урану таинственное волнение» и заставил его соединиться с Геей — так началось рождение первых богов.", tag: true },
       { name: "Танатос", role: "бог смерти (не путать с Аидом!)", parents: "Никта", children: "нет", lovers: "—", text: "По сериалу отдельно подчёркивается: сам Аид — не бог смерти, смерть это отдельное божество, Танатос, брат-близнец Гипноса (Сна).", tag: true },
       { name: "Гипнос", role: "бог сна", parents: "Никта", children: "нет", lovers: "—", text: "Бог сна. По сериалу, в Золотой век людей, когда смерти в привычном виде ещё не было, именно Гипнос тихо уводил уставших людей в царство блаженных снов." , tag: true },
       { name: "Геката", role: "богиня перекрёстков и колдовства", parents: "не уточняется", children: "—", lovers: "—", text: "Двойственная богиня — помогает людям в быту, но также насылает ночное безумие. Единственная из богов может свободно навещать царство Аида; помогла Деметре узнать о судьбе Персефоны.", tag: true },
@@ -254,7 +613,7 @@ const generations = [
       { name: "Аполлон", role: "бог света, музыки, пророчеств", parents: "Зевс и Лето", children: "Асклепий (от Корониды), Орфей (по некоторым версиям)", lovers: "Дафна (не отвечала взаимностью), Коронида, Кипарис, Гиацинт", text: "Брат-близнец Артемиды. Родился на острове Делос, тут же получил от Зевса лиру, а от Гефеста — колесницу. Убил преследовавшего его мать змея Пифона и основал святилище в Дельфах. Из-за хвастовства Ниобы своими 14 детьми убил их всех стрелами вместе с Артемидой. Влюблённая в него нимфа Дафна превратилась в лавр, лишь бы избежать его объятий. Возлюбленную Корониду убил за измену, но спас их не рождённого сына Асклепия. Гиацинта случайно убил диском, Кипариса убил горем — оба стали растениями, названными в их честь.", tag: true },
       { name: "Артемида", role: "богиня охоты и Луны", parents: "Зевс и Лето", children: "нет", lovers: "нет — дала обет девственности", text: "Сестра-близнец Аполлона. Покровительница дикой природы, охоты и девственниц. Жестоко наказывала нарушителей: превратила охотника Актеона в оленя за подглядывание, а обманутую Зевсом нимфу Каллисто застрелила из лука, узнав о её беременности." },
       { name: "Арес", role: "бог войны", parents: "Зевс и Гера", children: "Эрос, Деймос, Фобос, Гармония (от Афродиты); племя амазонок (от Гармонии, нимфы)", lovers: "Афродита", text: "Бог жестокой стороны войны, противоположность рассудительной Афины. Тайно встречался с женатой Афродитой, пока их не поймал в бронзовую сеть обманутый муж Гефест на потеху всему Олимпу. По сериалу, из ревности превратился в вепря и убил Адониса, соперника за любовь Афродиты." , tag: true },
-      { name: "Афродита", role: "богиня любви и красоты", parents: "родилась из морской пены, смешанной с кровью Урана", children: "Эрос, Деймос, Фобос, Гармония (от Ареса), Гермафродит (от Гермеса)", lovers: "Гефест (муж), Арес, Гермес, Адонис", text: "Вышла из пены на Кипре, воспитана Орами. Была выдана замуж за Гефеста, но изменяла ему с Аресом — их застали в хитрой сети и выставили на посмешище всему Олимпу. Позже полюбила красавца Адониса, рождённого из дерева, в которое превратилась несчастная Мирра; из-за ревности Персефоны и мести Ареса Адонис погиб от клыков вепря. Именно Афродита получила золотое яблоко «прекраснейшей» в суде Париса, что стало поводом к Троянской войне.", tag: true },
+      { name: "Афродита", role: "богиня любви и красоты", parents: "Уран (родилась из его крови, смешанной с морской пеной)", children: "Эрос, Деймос, Фобос, Гармония (от Ареса), Гермафродит (от Гермеса)", lovers: "Гефест (муж), Арес, Гермес, Адонис", text: "Вышла из пены на Кипре, воспитана Орами. Была выдана замуж за Гефеста, но изменяла ему с Аресом — их застали в хитрой сети и выставили на посмешище всему Олимпу. Позже полюбила красавца Адониса, рождённого из дерева, в которое превратилась несчастная Мирра; из-за ревности Персефоны и мести Ареса Адонис погиб от клыков вепря. Именно Афродита получила золотое яблоко «прекраснейшей» в суде Париса, что стало поводом к Троянской войне.", tag: true },
       { name: "Гермес", role: "вестник богов", parents: "Зевс и Майя", children: "Гермафродит (от Афродиты), Пан (от Дриопы), Автолик (от Хионы)", lovers: "Афродита, Дриопа, Хиона", text: "Самый младший из детей Зевса. В день рождения украл стадо коров Аполлона и изобрёл лиру из панциря черепахи, обменяв её у брата на стадо и золотой пастуший посох. Стал вестником богов, проводником душ в царство Аида, покровителем воров, торговцев и путников. Убил стоглазого великана Аргуса ради Ио. Его сын от смертной Хионы, хитроумный вор Автолик, стал дедом Одиссея.", tag: true },
       { name: "Гефест", role: "бог кузнецов и огня", parents: "Зевс и Гера (по сериалу — Гера сбросила его с Олимпа за уродство)", children: "Эрихтоний (от пролитого семени, воспитан Афиной)", lovers: "Афродита (жена), Афина (безуспешно)", text: "Хромой бог-кузнец, супруг Афродиты. Узнав об измене жены с Аресом, выковал невидимую бронзовую сеть, поймал любовников в постели и созвал богов посмеяться над ними. По сериалу, позже (по наущению завидующего ему Посейдона) попытался овладеть Афиной; та вырвалась, и его семя, упав на землю, оплодотворило Гею — так родился змееногий Эрихтоний.", tag: true },
       { name: "Дионис", role: "бог вина и веселья", parents: "Зевс и смертная Семела", children: "нет", lovers: "Ариадна (жена)", text: "Единственный олимпиец с смертной матерью, рождён дважды — из чрева сгоревшей Семелы и затем доношен в бедре Зевса. Изобрёл виноделие, странствовал по миру с шумной свитой менад и сатиров, жестоко карал тех, кто отвергал его культ (царь Ликург, царь Пенфей, растерзанный собственной матерью). Женился на покинутой Тесеем Ариадне на острове Наксос.", tag: true },
@@ -282,7 +641,7 @@ const generations = [
       { name: "Тифон", role: "чудовище, порождённое Геей и Тартаром", parents: "Гея и Тартар", children: "—", lovers: "—", text: "Гигантское чудовище с головой до звёзд и змеями вместо ног — последняя попытка Геи отомстить Зевсу за титанов. Побеждён Зевсом, который обрушил на него гору Этна на Сицилии. Спасаясь от Тифона, боги бежали в Египет и приняли облик животных: Аполлон — коршуна, Гермес — ибиса, Арес — рыбы, Дионис — козла, Гефест — быка.", tag: true },
       { name: "Харон", role: "перевозчик душ", parents: "не уточняется", children: "—", lovers: "—", text: "Ветхий старик-перевозчик, переправляющий тени умерших через реку Стикс в подземное царство — но только тех, у кого есть монета-обол для платы.", tag: true },
       { name: "Цербер", role: "пёс, охраняющий вход в царство мёртвых", parents: "не уточняется", children: "—", lovers: "—", text: "Огромный трёхголовый пёс Аида. Ласково встречает души на входе в подземный мир, но не выпускает обратно ни одну.", tag: true },
-      { name: "Пандора", role: "первая женщина", parents: "создана Гефестом по приказу Зевса", children: "Пирра (от Эпиметея)", lovers: "Эпиметей (муж)", text: "Создана богами как «дар всех богов» и месть людям за украденный Прометеем огонь: Афродита дала ей грацию, Афина — одежды, Гермес — хитрый ум и любопытство. Открыла запретную шкатулку и выпустила в мир все беды — но на дне осталась Надежда (Элпис).", tag: true },
+      { name: "Пандора", role: "первая женщина", parents: "Гефест и Зевс (создана по его приказу)", children: "Пирра (от Эпиметея)", lovers: "Эпиметей (муж)", text: "Создана богами как «дар всех богов» и месть людям за украденный Прометеем огонь: Афродита дала ей грацию, Афина — одежды, Гермес — хитрый ум и любопытство. Открыла запретную шкатулку и выпустила в мир все беды — но на дне осталась Надежда (Элпис).", tag: true },
       { name: "Мирра", role: "мать Адониса, превращённая в дерево", parents: "дочь царя Кипра", children: "Адонис", lovers: "собственный отец (обманом, по воле мстительной Афродиты)", text: "Наказанная Афродитой за неуважение, была обманом сведена с собственным отцом. Спасаясь от его гнева, взмолилась богам и превратилась в мирровое дерево, из которого 9 месяцев спустя родился Адонис.", tag: true },
       { name: "Адонис", role: "прекрасный юноша, возлюбленный Афродиты", parents: "Мирра (родился из дерева)", children: "—", lovers: "Афродита, Персефона (соперничали за него)", text: "Красавец, из-за которого спорили Афродита и Персефона. Погиб от клыков вепря, в которого, по сериалу, обратился ревнивый Арес.", tag: true },
       { name: "Эрихтоний", role: "змееногий сын Земли, воспитанник Афины", parents: "Гея (от семени Гефеста)", children: "—", lovers: "—", text: "Наполовину человек, наполовину змей. Гея, родив его, в отвращении отказалась от сына, и его усыновила Афина, спрятав в священной корзине. Жрицы, из любопытства открывшие корзину, в ужасе бросились со скалы Акрополя.", tag: true },
@@ -318,7 +677,7 @@ const heroGenerations = [
     title: "Беллерофонт, Пегас и Химера",
     gods: [
       { name: "Беллерофонт", role: "укротитель Пегаса, убийца Химеры", parents: "Главк (сын Сизифа), по слухам — Посейдон", children: "трое детей (от Филонои)", lovers: "Филоноя (жена), домогалась царица Сфенебея", text: "Случайно убив брата на охоте, был изгнан и очищен царём Претом. Оклеветанный женой царя Сфенебеей (которую отверг), был отправлен с письмом-смертным приговором к царю Ликии Иобату. Тот поручил ему убить неуязвимую Химеру — чудовище с головами льва, козы и дракона. С помощью Афины укротил крылатого коня Пегаса золотой уздечкой и с воздуха убил Химеру копьём со свинцом, который расплавился в её огненной глотке. Возгордившись, попытался долететь на Пегасе до Олимпа, за что Зевс наслал на коня овода — Беллерофонт упал на землю, ослеп, охромел и закончил жизнь в безвестности.", tag: true },
-      { name: "Пегас", role: "крылатый белый конь", parents: "родился из крови Медузы (и Посейдона)", children: "—", lovers: "—", text: "Любимец Муз, обитал у источника Гиппокрены на горе Геликон. Укрощён Беллерофонтом золотой уздечкой, подаренной Афиной. После падения седока вознёсся на Олимп и возит молнии Зевса.", tag: true },
+      { name: "Пегас", role: "крылатый белый конь", parents: "Медуза и Посейдон (родился из её крови)", children: "—", lovers: "—", text: "Любимец Муз, обитал у источника Гиппокрены на горе Геликон. Укрощён Беллерофонтом золотой уздечкой, подаренной Афиной. После падения седока вознёсся на Олимп и возит молнии Зевса.", tag: true },
       { name: "Химера", role: "огнедышащее чудовище", parents: "не уточняется", children: "—", lovers: "—", text: "Чудовище с телом, объединяющим льва, козу и дракона, извергающее огонь. Убита Беллерофонтом верхом на Пегасе." }
     ]
   },
@@ -365,7 +724,179 @@ const heroGenerations = [
     ]
   }
 ];
+// ===================== АНГЛИЙСКИЕ ИМЕНА (для отображения в скобках) =====================
+const EN_NAMES = {
+  "Хаос": "Chaos",
+  "Гея": "Gaia",
+  "Уран": "Uranus",
+  "Тартар": "Tartarus",
+  "Никта": "Nyx",
+  "Эреб": "Erebus",
+  "Понт": "Pontus",
+  "Эрос (изначальный)": "Eros",
+  "Танатос": "Thanatos",
+  "Гипнос": "Hypnos",
+  "Геката": "Hecate",
+  "Ирида (богиня раздора)": "Eris",
+  "Циклопы (Бронт, Стероп, Арг)": "Cyclopes (Brontes, Steropes, Arges)",
+  "Гекатонхейры (Котт, Бриарей, Гиес)": "Hecatoncheires (Cottus, Briareus, Gyges)",
+  "Кронос": "Cronus",
+  "Рея": "Rhea",
+  "Океан": "Oceanus",
+  "Тефида": "Tethys",
+  "Гиперион": "Hyperion",
+  "Тейя": "Theia",
+  "Кой": "Coeus",
+  "Феба": "Phoebe",
+  "Иапет": "Iapetus",
+  "Фемида": "Themis",
+  "Мнемозина": "Mnemosyne",
+  "Метида": "Metis",
+  "Астрей": "Astraeus",
+  "Эврибия": "Eurybia",
+  "Крий": "Crius",
+  "Нерей": "Nereus",
+  "Форкий": "Phorcys",
+  "Кето": "Ceto",
+  "Тавмант": "Thaumas",
+  "Амфитрита": "Amphitrite",
+  "Фетида": "Thetis",
+  "Прометей": "Prometheus",
+  "Атлант": "Atlas",
+  "Эпиметей": "Epimetheus",
+  "Гелиос": "Helios",
+  "Селена": "Selene",
+  "Эос": "Eos",
+  "Лето": "Leto",
+  "Пасифая": "Pasiphae",
+  "Зевс": "Zeus",
+  "Гера": "Hera",
+  "Посейдон": "Poseidon",
+  "Аид": "Hades",
+  "Деметра": "Demeter",
+  "Гестия": "Hestia",
+  "Афина": "Athena",
+  "Аполлон": "Apollo",
+  "Артемида": "Artemis",
+  "Арес": "Ares",
+  "Афродита": "Aphrodite",
+  "Гермес": "Hermes",
+  "Гефест": "Hephaestus",
+  "Дионис": "Dionysus",
+  "Персефона": "Persephone",
+  "Эрос": "Eros",
+  "Гармония": "Harmonia",
+  "Деймос и Фобос": "Deimos and Phobos",
+  "Гермафродит": "Hermaphroditus",
+  "Пан": "Pan",
+  "Автолик": "Autolycus",
+  "Геба": "Hebe",
+  "Илифия": "Eileithyia",
+  "Асклепий": "Asclepius",
+  "Амалфея": "Amalthea",
+  "Тифон": "Typhon",
+  "Харон": "Charon",
+  "Цербер": "Cerberus",
+  "Пандора": "Pandora",
+  "Мирра": "Myrrha",
+  "Адонис": "Adonis",
+  "Эрихтоний": "Erichthonius",
+  "Паллада": "Pallas",
+  "Арахна": "Arachne",
+  "Ниоба": "Niobe",
+  "Дафна": "Daphne",
+  "Сизиф": "Sisyphus",
+  "Тантал": "Tantalus",
+  "Пелоп": "Pelops",
+  "Иксион": "Ixion",
+  "Даная": "Danae",
+  "Персей": "Perseus",
+  "Андромеда": "Andromeda",
+  "Медуза": "Medusa",
+  "Беллерофонт": "Bellerophon",
+  "Пегас": "Pegasus",
+  "Химера": "Chimera",
+  "Ясон (Исон)": "Jason",
+  "Медея": "Medea",
+  "Ээт": "Aeetes",
+  "Кирка (Цирцея)": "Circe",
+  "Тесей": "Theseus",
+  "Минос": "Minos",
+  "Минотавр": "Minotaur",
+  "Ариадна": "Ariadne",
+  "Дедал": "Daedalus",
+  "Икар": "Icarus",
+  "Талос": "Talos",
+  "Геракл (Алкид)": "Heracles",
+  "Алкмена": "Alcmene",
+  "Лай": "Laius",
+  "Иокаста": "Jocasta",
+  "Эдип": "Oedipus",
+  "Сфинкс": "Sphinx",
+  "Этеокл": "Eteocles",
+  "Полиник": "Polynices",
+  "Антигона": "Antigone",
+  "Исмена": "Ismene",
+  "Креонт": "Creon",
+};
 
+// добавляет английское имя в скобках, если оно известно
+function withEn(name) {
+  const en = EN_NAMES[name];
+  return en ? name + ' (' + en + ')' : name;
+}
+
+// ===================== РЕЕСТР ИМЁН ДЛЯ КЛИКАБЕЛЬНЫХ ССЫЛОК (вкладка 1) =====================
+function cleanName(raw) {
+  return raw.replace(/\s*\([^)]*\)\s*/g, "").trim();
+}
+
+const knownNames = new Set();
+function registerGens(gens) {
+  gens.forEach(gen => {
+    gen.gods.forEach(god => {
+      const clean = cleanName(god.name);
+      if (clean) knownNames.add(clean);
+      if (clean.includes(" и ")) {
+        clean.split(" и ").forEach(part => {
+          const p = part.trim();
+          if (p) knownNames.add(p);
+        });
+      }
+      const m = god.name.match(/\(([^)]+)\)/);
+      if (m && !m[1].includes(",")) {
+        knownNames.add(m[1].trim());
+      }
+    });
+  });
+}
+registerGens(generations);
+registerGens(heroGenerations);
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// превращает известные имена внутри текста в кликабельные кнопки-ссылки на визуальное древо
+function linkify(text) {
+  if (!text) return text;
+  const keys = Array.from(knownNames).sort((a, b) => b.length - a.length);
+  let result = text;
+  const placeholders = [];
+  keys.forEach(key => {
+    if (!key || key.length < 2) return;
+    const re = new RegExp("(?<![А-Яа-яЁёA-Za-z])" + escapeRegex(key) + "(?![А-Яа-яЁёA-Za-z])", "g");
+    result = result.replace(re, (match) => {
+      const idx = placeholders.length;
+      placeholders.push('<span class="lnk" data-key="' + key + '">' + match + "</span>");
+      return "\u0000" + idx + "\u0000";
+    });
+  });
+  result = result.replace(/\u0000(\d+)\u0000/g, (_, idx) => placeholders[idx]);
+  return result;
+}
+
+// ===================== РЕНДЕР СПИСКА (вкладка 1) =====================
 function renderSection(container, gens, offsetPrefix) {
   gens.forEach((gen, genIndex) => {
     const genDiv = document.createElement("div");
@@ -383,6 +914,7 @@ function renderSection(container, gens, offsetPrefix) {
       const card = document.createElement("div");
       card.className = "god";
       const id = offsetPrefix + "-desc-" + genIndex + "-" + godIndex;
+      card.id = "card-" + id;
 
       card.innerHTML = `
         <div class="god-name">${god.name}</div>
@@ -408,9 +940,10 @@ function renderSection(container, gens, offsetPrefix) {
       desc.id = offsetPrefix + "-desc-" + genIndex + "-" + godIndex;
       desc.innerHTML = `
         <b>${god.name}</b> — ${god.text}
-        <span class="fam"><b>Родители:</b> ${god.parents}</span>
-        <span class="fam"><b>Дети:</b> ${god.children}</span>
-        <span class="fam"><b>Возлюбленные:</b> ${god.lovers}</span>
+        ${EN_NAMES[god.name] ? `<span class="fam"><b>Оригинальное/английское имя:</b> ${EN_NAMES[god.name]}</span>` : ''}
+        <span class="fam"><b>Родители:</b> ${linkify(god.parents)}</span>
+        <span class="fam"><b>Дети:</b> ${linkify(god.children)}</span>
+        <span class="fam"><b>Возлюбленные:</b> ${linkify(god.lovers)}</span>
         ${god.tag ? '<span class="tag">🎬 из сериала ARTE</span>' : ''}
       `;
       descRow.appendChild(desc);
@@ -441,6 +974,346 @@ part2sub.textContent = "Полубоги, цари и проклятые сме�
 treeContainer.appendChild(part2sub);
 
 renderSection(treeContainer, heroGenerations, "p2");
+
+// ===================== ВИЗУАЛЬНОЕ ДРЕВО (вкладка 2) — ДИНАМИЧЕСКИЙ ДВИЖОК =====================
+// Дерево строится не вручную, а прямо из реальных полей "parents" всех карточек:
+// для персонажа X ищем всех, у кого в поле "родители" встречается имя X — это и есть его дети.
+// Так гарантируется, что дерево ВСЕГДА совпадает со списком на первой вкладке.
+
+const allChars = [...generations, ...heroGenerations].flatMap(g => g.gods);
+
+function textMentionsName(text, key) {
+  if (!text) return false;
+  const re = new RegExp("(?<![А-Яа-яЁёA-Za-z])" + escapeRegex(key) + "(?![А-Яа-яЁёA-Za-z])");
+  return re.test(text);
+}
+
+function findChildrenOf(cleanKey) {
+  return allChars.filter(g => textMentionsName(g.parents, cleanKey));
+}
+
+// строим поддерево от заданного персонажа (по чистому имени), с защитой от циклов и лимитом глубины
+function buildDynamicNode(cleanKey, visitedPath, depth) {
+  if (visitedPath.has(cleanKey) || depth > 10) return null;
+  const data = findFullDataByName(cleanKey);
+  const newPath = new Set(visitedPath);
+  newPath.add(cleanKey);
+  const kids = findChildrenOf(cleanKey)
+    .map(childData => buildDynamicNode(cleanName(childData.name), newPath, depth + 1))
+    .filter(Boolean);
+  return { key: cleanKey, data, kids, depth };
+}
+
+function buildLi(node) {
+  const li = document.createElement("li");
+  const row = document.createElement("div");
+  row.className = "box-row";
+
+  const box = document.createElement("div");
+  box.className = "pbox" + (node.depth >= 2 ? " small" : "");
+  const displayName = node.data ? node.data.name : node.key;
+  const displayRole = node.data ? node.data.role : "";
+  box.innerHTML = `<div class="pname">${withEn(displayName)}</div>` + (displayRole ? `<div class="prole">${displayRole}</div>` : "");
+  box.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showInfoPanel(node.key);
+  });
+  row.appendChild(box);
+  li.appendChild(row);
+
+  if (node.kids && node.kids.length) {
+    const ul = document.createElement("ul");
+    node.kids.forEach(child => ul.appendChild(buildLi(child)));
+    li.appendChild(ul);
+  }
+
+  return li;
+}
+
+function renderTree(rootNode, container) {
+  const ul = document.createElement("ul");
+  ul.className = "ptree";
+  ul.appendChild(buildLi(rootNode));
+  container.appendChild(ul);
+}
+
+// показывает ВСЁ дерево целиком, начиная от Хаоса (боги) и отдельно — от корней родов героев
+const HERO_ROOTS = ["Тартар — узники", "Сизиф", "Тантал", "Иксион", "Ээт", "Беллерофонт", "Дедал", "Алкмена", "Лай"];
+
+function renderFullTree() {
+  const area = document.getElementById("treeDynamicArea");
+  area.innerHTML = "";
+  document.getElementById("backBtnWrap").style.display = "none";
+  document.getElementById("parchModeLabel").textContent = "ВСЕ БОГИ, ТИТАНЫ, ДУХИ И ГЕРОИ ГРЕЦИИ";
+
+  const godsRoot = document.createElement("div");
+  area.appendChild(godsRoot);
+  const chaosNode = buildDynamicNode("Хаос", new Set(), 0);
+  renderTree(chaosNode, godsRoot);
+
+  const divider = document.createElement("div");
+  divider.className = "heart-divider";
+  divider.textContent = "⚜ ⚜ ⚜";
+  area.appendChild(divider);
+
+  const heroTitle = document.createElement("div");
+  heroTitle.className = "parch-title";
+  heroTitle.style.fontSize = "28px";
+  heroTitle.textContent = "Древо героев";
+  area.appendChild(heroTitle);
+
+  const heroSub = document.createElement("div");
+  heroSub.className = "parch-sub";
+  heroSub.textContent = "Персонажи без божественных предков в базе — сгруппированы по историям";
+  area.appendChild(heroSub);
+
+  const heroRoot = document.createElement("div");
+  area.appendChild(heroRoot);
+
+  // корни героев: те, чьи родители не найдены как отдельные персонажи (не боги/титаны),
+  // либо явно заданные точки входа для историй
+  const shown = new Set();
+  const dynamicRoots = [];
+  heroGenerations.forEach(gen => {
+    gen.gods.forEach(god => {
+      const key = cleanName(god.name);
+      // персонаж считается "корнем" истории героев, если ни один известный персонаж
+      // не упомянут в его поле parents (т.е. его родители - "внешние", не из нашей базы)
+      const parentIsKnown = allChars.some(other => {
+        const otherKey = cleanName(other.name);
+        return otherKey !== key && textMentionsName(god.parents, otherKey);
+      });
+      if (!parentIsKnown && !shown.has(key)) {
+        shown.add(key);
+        dynamicRoots.push(key);
+      }
+    });
+  });
+
+  dynamicRoots.forEach(key => {
+    const node = buildDynamicNode(key, new Set(), 0);
+    if (!node) return;
+    renderTree(node, heroRoot);
+  });
+}
+
+// показывает ТОЛЬКО выбранного персонажа и всех его потомков ниже
+function renderFocusedTree(rootKey, displayLabel) {
+  const area = document.getElementById("treeDynamicArea");
+  area.innerHTML = "";
+  document.getElementById("backBtnWrap").style.display = "block";
+  document.getElementById("parchModeLabel").textContent = "Ветвь: " + displayLabel;
+
+  const root = document.createElement("div");
+  area.appendChild(root);
+  const node = buildDynamicNode(rootKey, new Set(), 0);
+  renderTree(node, root);
+  return root;
+}
+
+renderFullTree();
+
+// ============ ZOOM & PAN (масштаб от курсора, авто-подгонка под экран) ============
+let scale = 1, panX = 0, panY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0;
+
+const zc = document.getElementById("zoomContent");
+const zv = document.getElementById("zoomViewport");
+
+function applyTransform() {
+  zc.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+}
+
+function zoomAt(factor, originX, originY) {
+  const newScale = Math.min(3, Math.max(0.08, scale * factor));
+  const worldX = (originX - panX) / scale;
+  const worldY = (originY - panY) / scale;
+  scale = newScale;
+  panX = originX - worldX * scale;
+  panY = originY - worldY * scale;
+  applyTransform();
+}
+
+function zoomBy(factor) {
+  const rect = zv.getBoundingClientRect();
+  zoomAt(factor, rect.width / 2, rect.height / 2);
+}
+
+function fitToScreen() {
+  zc.style.transform = "none";
+  const contentW = zc.scrollWidth;
+  const contentH = zc.scrollHeight;
+  const rect = zv.getBoundingClientRect();
+  if (!contentW || !contentH || !rect.width || !rect.height) { applyTransform(); return; }
+  const fitScale = Math.min(rect.width / contentW, rect.height / contentH) * 0.94;
+  scale = Math.min(1, fitScale) || 0.3;
+  panX = (rect.width - contentW * scale) / 2;
+  panY = 20;
+  applyTransform();
+}
+function zoomReset() {
+  fitToScreen();
+}
+
+zv.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const rect = zv.getBoundingClientRect();
+  zoomAt(e.deltaY < 0 ? 1.12 : 0.89, e.clientX - rect.left, e.clientY - rect.top);
+}, { passive: false });
+
+zv.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  zv.classList.add("dragging");
+  dragStartX = e.clientX - panX;
+  dragStartY = e.clientY - panY;
+});
+window.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  panX = e.clientX - dragStartX;
+  panY = e.clientY - dragStartY;
+  applyTransform();
+});
+window.addEventListener("mouseup", () => {
+  isDragging = false;
+  zv.classList.remove("dragging");
+});
+zv.addEventListener("dblclick", (e) => {
+  const rect = zv.getBoundingClientRect();
+  zoomAt(1.5, e.clientX - rect.left, e.clientY - rect.top);
+});
+
+let pinchStartDist = null, pinchStartScale = 1;
+function touchDist(t1, t2) {
+  return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+}
+zv.addEventListener("touchstart", (e) => {
+  if (e.touches.length === 2) {
+    pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+    pinchStartScale = scale;
+    isDragging = false;
+  } else {
+    const t = e.touches[0];
+    isDragging = true;
+    dragStartX = t.clientX - panX;
+    dragStartY = t.clientY - panY;
+  }
+}, { passive: true });
+zv.addEventListener("touchmove", (e) => {
+  if (e.touches.length === 2 && pinchStartDist) {
+    const rect = zv.getBoundingClientRect();
+    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+    const newDist = touchDist(e.touches[0], e.touches[1]);
+    const factor = (newDist / pinchStartDist) * pinchStartScale / scale;
+    zoomAt(factor, midX, midY);
+  } else if (isDragging) {
+    const t = e.touches[0];
+    panX = t.clientX - dragStartX;
+    panY = t.clientY - dragStartY;
+    applyTransform();
+  }
+}, { passive: true });
+zv.addEventListener("touchend", (e) => {
+  isDragging = false;
+  if (e.touches.length < 2) pinchStartDist = null;
+});
+
+fitToScreen();
+window.addEventListener("resize", () => {
+  if (document.getElementById("tab2").classList.contains("active")) fitToScreen();
+});
+
+// ============ ПЕРЕХОД ИЗ СПИСКА (вкладка 1) К ВЕТКЕ ДЕРЕВА (вкладка 2) ============
+// ищем узел прямо в данных дерева (не в DOM), чтобы можно было отрисовать
+// только его самого и всех потомков ниже, без остального дерева
+
+// возвращает все варианты имени персонажа: "чистое" имя, части составного ("X и Y" -> X, Y),
+// альтернативное имя в скобках — используется для сопоставления ссылок с реальными карточками
+function namesOf(rawName) {
+  const names = [];
+  const clean = cleanName(rawName);
+  if (clean) names.push(clean);
+  if (clean.includes(" и ")) {
+    clean.split(" и ").forEach(p => { const t = p.trim(); if (t) names.push(t); });
+  }
+  const m = rawName.match(/\(([^)]+)\)/);
+  if (m && !m[1].includes(",")) names.push(m[1].trim());
+  return names;
+}
+
+function goToTreeNode(key) {
+  showTab("tab2", document.getElementById("btnTab2"));
+  // страница могла быть прокручена глубоко вниз (список большой) — возвращаем в начало,
+  // иначе вкладка переключится, а видимая область останется пустой
+  window.scrollTo({ top: 0, behavior: "instant" });
+
+  setTimeout(() => {
+    const data = findFullDataByName(key);
+    if (!data) {
+      renderFullTree();
+      fitToScreen();
+      return;
+    }
+
+    const root = renderFocusedTree(cleanName(data.name), data.name);
+    fitToScreen();
+
+    // подсветим саму верхнюю карточку ветки
+    setTimeout(() => {
+      const box = root.querySelector(".pbox");
+      if (!box) return;
+      box.classList.remove("tree-flash");
+      void box.offsetWidth;
+      box.classList.add("tree-flash");
+      setTimeout(() => box.classList.remove("tree-flash"), 1700);
+    }, 80);
+  }, 30);
+}
+
+document.addEventListener("click", (e) => {
+  const lnk = e.target.closest(".lnk");
+  if (!lnk) return;
+  goToTreeNode(lnk.dataset.key);
+  showInfoPanel(lnk.dataset.key);
+});
+
+// ============ ПАНЕЛЬ ПОЛНОГО ОПИСАНИЯ (клик по карточке в дереве) ============
+// находим полные данные персонажа (родители/дети/возлюблённые/текст) по любому
+// варианту его имени: точное совпадение, "чистое" имя без скобок, альт-имя в скобках
+function findFullDataByName(rawOrKey) {
+  const all = [...generations, ...heroGenerations].flatMap(g => g.gods);
+  let match = all.find(g => g.name === rawOrKey);
+  if (match) return match;
+  match = all.find(g => namesOf(g.name).includes(rawOrKey));
+  if (match) return match;
+  const clean = cleanName(rawOrKey);
+  match = all.find(g => cleanName(g.name) === clean);
+  return match || null;
+}
+
+function showInfoPanel(rawOrKey) {
+  const data = findFullDataByName(rawOrKey);
+  if (!data) return;
+
+  const panel = document.getElementById("infoPanel");
+  panel.innerHTML = `
+    <button class="info-close" onclick="closeInfoPanel()">✕</button>
+    <div class="info-name">${withEn(data.name)}</div>
+    <div class="info-role">${data.role}</div>
+    <div class="info-text">${data.text}</div>
+    <span class="info-fam"><b>Родители:</b> ${linkify(data.parents)}</span>
+    <span class="info-fam"><b>Дети:</b> ${linkify(data.children)}</span>
+    <span class="info-fam"><b>Возлюбленные:</b> ${linkify(data.lovers)}</span>
+    ${data.tag ? '<div class="info-tag">🎬 из сериала ARTE</div>' : ''}
+  `;
+  panel.classList.add("open");
+  document.getElementById("infoBackdrop").classList.add("open");
+}
+
+function closeInfoPanel() {
+  document.getElementById("infoPanel").classList.remove("open");
+  document.getElementById("infoBackdrop").classList.remove("open");
+}
 </script>
 
 </body>
