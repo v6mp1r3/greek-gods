@@ -40,6 +40,71 @@
     font-size: 12px;
     margin-bottom: 26px;
   }
+
+  /* ===== ПОИСК (только вкладка 1) ===== */
+  .search-wrap {
+    position: relative;
+    max-width: 480px;
+    margin: 0 auto 40px auto;
+  }
+  .search-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #232838;
+    border: 1px solid #4a5170;
+    border-radius: 20px;
+    padding: 12px 18px;
+    color: #eee;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: #f2d16b; }
+  .search-results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #1f2432;
+    border: 1px solid #4a5170;
+    border-radius: 12px;
+    max-height: 420px;
+    overflow-y: auto;
+    z-index: 60;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .search-results.open { display: block; }
+  .search-result-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #2c3346;
+    transition: background 0.12s;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: #2c3346; }
+  .search-result-name {
+    color: #f5e6b8;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .search-result-meta {
+    color: #8b93ab;
+    font-size: 11.5px;
+    margin-top: 2px;
+  }
+  .search-result-meta .mention-tag {
+    color: #d7a34a;
+    font-style: italic;
+  }
+  .search-empty {
+    padding: 14px 16px;
+    color: #7f869c;
+    font-size: 13px;
+    font-style: italic;
+  }
+
   .part-title {
     text-align: center;
     color: #f2d16b;
@@ -92,6 +157,13 @@
   .god.open {
     border-color: #f2d16b;
     background: linear-gradient(160deg, #3a3520, #24222b);
+  }
+  .god.search-flash {
+    animation: searchFlashPulse 1.6s ease;
+  }
+  @keyframes searchFlashPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(242,209,107,0.9); border-color: #f2d16b; }
+    100% { box-shadow: 0 0 0 18px rgba(242,209,107,0); border-color: #f2d16b; }
   }
   .god-name {
     font-weight: bold;
@@ -477,6 +549,11 @@
 <p class="legend">Древо идёт сверху вниз по поколениям: чем ниже секция — тем моложе персонаж</p>
 <p class="source">Факты со значком 🎬 взяты из документального сериала «Мифы древней Греции» (ARTE, реж. Сильвен Бержер и др., 20 эпизодов о богах и героях)</p>
 
+<div class="search-wrap">
+  <input type="text" id="searchInput" class="search-input" placeholder="Поиск по имени (русский или английский)..." autocomplete="off">
+  <div id="searchResults" class="search-results"></div>
+</div>
+
 <div id="tree"></div>
 
 </div>
@@ -840,6 +917,107 @@ const EN_NAMES = {
   "Креонт": "Creon",
 };
 
+const EXTRA_MENTIONS = [
+  { name: "Адраст", en: "Adrastus", sources: ["Полиник"] },
+  { name: "Акамант", en: "Acamas", sources: ["Тесей"] },
+  { name: "Акрисий", en: "Acrisius", sources: ["Даная"] },
+  { name: "Амфион", en: "Amphion", sources: ["Ниоба"] },
+  { name: "Амфитрион", en: "Amphitryon", sources: ["Алкмена"] },
+  { name: "Антиклея", en: "Anticlea", sources: ["Автолик"] },
+  { name: "Антиопа", en: "Antiope", sources: ["Тесей"] },
+  { name: "Апсирт", en: "Apsyrtus", sources: ["Ээт (Цирцея)", "Медея"] },
+  { name: "Аркад", en: "Arcas", sources: ["Зевс"] },
+  { name: "Асоп", en: "Asopus", sources: ["Океан"] },
+  { name: "Астерия", en: "Asteria", sources: ["Кой", "Феба"] },
+  { name: "Атропос", en: "Atropos", sources: ["Фемида"] },
+  { name: "Ахилл", en: "Achilles", sources: ["Фетида"] },
+  { name: "Борей", en: "Boreas", sources: ["Астрей", "Эос"] },
+  { name: "Ганимед", en: "Ganymede", sources: ["Зевс"] },
+  { name: "Геспериды", en: "Hesperides", sources: ["Атлант"] },
+  { name: "Гиацинт", en: "Hyacinthus", sources: ["Аполлон"] },
+  { name: "Гилл", en: "Hyllus", sources: ["Геракл (Алкид)"] },
+  { name: "Главк", en: "Glaucus", sources: ["Сизиф", "Беллерофонт"] },
+  { name: "Горгоны", en: "Gorgons", sources: ["Форкий", "Кето"] },
+  { name: "Грайи", en: "Graeae", sources: ["Форкий", "Кето"] },
+  { name: "Демофонт", en: "Demophon", sources: ["Тесей"] },
+  { name: "Деянира", en: "Deianira", sources: ["Геракл (Алкид)"] },
+  { name: "Дия", en: "Dia", sources: ["Иксион"] },
+  { name: "Дорида", en: "Doris", sources: ["Нерей"] },
+  { name: "Дриопа", en: "Dryope", sources: ["Гермес", "Пан"] },
+  { name: "Европа", en: "Europa", sources: ["Зевс", "Минос"] },
+  { name: "Елена", en: "Helen", sources: ["Зевс"] },
+  { name: "Зефир", en: "Zephyrus", sources: ["Астрей", "Эос"] },
+  { name: "Ио", en: "Io", sources: ["Зевс"] },
+  { name: "Иола", en: "Iole", sources: ["Геракл (Алкид)"] },
+  { name: "Ипполит", en: "Hippolytus", sources: ["Тесей"] },
+  { name: "Ификл", en: "Iphicles", sources: ["Алкмена"] },
+  { name: "Кадм", en: "Cadmus", sources: ["Гармония"] },
+  { name: "Каллисто", en: "Callisto", sources: ["Зевс"] },
+  { name: "Кассиопея", en: "Cassiopeia", sources: ["Андромеда"] },
+  { name: "Кастор", en: "Castor", sources: ["Зевс"] },
+  { name: "Кентавр", en: "Centaurus", sources: ["Иксион"] },
+  { name: "Кипарис", en: "Cyparissus", sources: ["Аполлон"] },
+  { name: "Климена", en: "Clymene", sources: ["Иапет", "Прометей", "Атлант", "Эпиметей", "Гелиос"] },
+  { name: "Клото", en: "Clotho", sources: ["Фемида"] },
+  { name: "Коронида", en: "Coronis", sources: ["Аполлон", "Асклепий"] },
+  { name: "Лабдак", en: "Labdacus", sources: ["Лай"] },
+  { name: "Лахесис", en: "Lachesis", sources: ["Фемида"] },
+  { name: "Леда", en: "Leda", sources: ["Зевс"] },
+  { name: "Майя", en: "Maia", sources: ["Атлант", "Гермес"] },
+  { name: "Мегара", en: "Megara", sources: ["Геракл (Алкид)"] },
+  { name: "Менетий", en: "Menoetius", sources: ["Иапет"] },
+  { name: "Мермер", en: "Mermeros", sources: ["Ясон (Исон)", "Медея"] },
+  { name: "Меропа", en: "Merope", sources: ["Сизиф"] },
+  { name: "Мойры", en: "Moirai (The Fates)", sources: ["Никта", "Фемида", "Зевс"] },
+  { name: "Музы", en: "Muses", sources: ["Мнемозина", "Зевс"] },
+  { name: "Немезида", en: "Nemesis", sources: ["Никта"] },
+  { name: "Нефела", en: "Nephele", sources: ["Иксион"] },
+  { name: "Нот", en: "Notus", sources: ["Астрей", "Эос"] },
+  { name: "Одиссей", en: "Odysseus", sources: ["Автолик", "Сизиф"] },
+  { name: "Орион", en: "Orion", sources: ["Эос"] },
+  { name: "Орфей", en: "Orpheus", sources: ["Аполлон"] },
+  { name: "Оры", en: "Horae", sources: ["Фемида", "Зевс"] },
+  { name: "Паллант", en: "Pallas", sources: ["Эврибия", "Крий"] },
+  { name: "Пелей", en: "Peleus", sources: ["Фетида"] },
+  { name: "Пелий", en: "Pelias", sources: ["Ясон (Исон)"] },
+  { name: "Пеней", en: "Peneus", sources: ["Дафна"] },
+  { name: "Перс", en: "Perses", sources: ["Эврибия", "Крий", "Персей"] },
+  { name: "Персеида", en: "Perseis", sources: ["Гелиос", "Пасифая"] },
+  { name: "Пирра", en: "Pyrrha", sources: ["Эпиметей", "Пандора"] },
+  { name: "Плеяды", en: "Pleiades", sources: ["Атлант"] },
+  { name: "Плуто", en: "Plouto", sources: ["Тантал"] },
+  { name: "Полиб", en: "Polybus", sources: ["Эдип"] },
+  { name: "Полидевк", en: "Polydeuces (Pollux)", sources: ["Зевс"] },
+  { name: "Полифем", en: "Polyphemus", sources: ["Посейдон"] },
+  { name: "Психея", en: "Psyche", sources: ["Эрос"] },
+  { name: "Радамант", en: "Rhadamanthus", sources: ["Зевс"] },
+  { name: "Сарпедон", en: "Sarpedon", sources: ["Зевс"] },
+  { name: "Семела", en: "Semele", sources: ["Зевс", "Дионис"] },
+  { name: "Стикс", en: "Styx", sources: ["Океан"] },
+  { name: "Сфена", en: "Sthenno", sources: ["Форкий"] },
+  { name: "Сфенебея", en: "Stheneboea", sources: ["Беллерофонт"] },
+  { name: "Тритон", en: "Triton", sources: ["Амфитрита", "Посейдон"] },
+  { name: "Фаэтон", en: "Phaethon", sources: ["Гелиос"] },
+  { name: "Федра", en: "Phaedra", sources: ["Пасифая", "Тесей", "Минос"] },
+  { name: "Ферет", en: "Pheres", sources: ["Ясон (Исон)", "Медея"] },
+  { name: "Филоноя", en: "Philonoe", sources: ["Беллерофонт"] },
+  { name: "Халкиопа", en: "Chalciope", sources: ["Ээт"] },
+  { name: "Хариты", en: "Charites (Graces)", sources: ["Зевс"] },
+  { name: "Хиона", en: "Chione", sources: ["Гермес", "Автолик"] },
+  { name: "Хрисаор", en: "Chrysaor", sources: ["Посейдон", "Медуза"] },
+  { name: "Хрисипп", en: "Chrysippus", sources: ["Лай"] },
+  { name: "Эвриала", en: "Euryale", sources: ["Форкий"] },
+  { name: "Эвринома", en: "Eurynome", sources: ["Зевс"] },
+  { name: "Эгей", en: "Aegeus", sources: ["Тесей"] },
+  { name: "Эгина", en: "Aegina", sources: ["Зевс"] },
+  { name: "Электра", en: "Electra", sources: ["Тавмант", "Океан"] },
+  { name: "Эндимион", en: "Endymion", sources: ["Селена"] },
+  { name: "Эол", en: "Aeolus", sources: ["Сизиф"] },
+  { name: "Эрида", en: "Eris", sources: ["Никта"] },
+  { name: "Эринии", en: "Erinyes (Furies)", sources: ["Гея", "Уран"] },
+  { name: "Эфра", en: "Aethra", sources: ["Посейдон", "Тесей"] },
+];
+
 // добавляет английское имя в скобках, если оно известно
 function withEn(name) {
   const en = EN_NAMES[name];
@@ -974,6 +1152,112 @@ part2sub.textContent = "Полубоги, цари и проклятые сме�
 treeContainer.appendChild(part2sub);
 
 renderSection(treeContainer, heroGenerations, "p2");
+
+// ===================== ПОИСК (только вкладка 1) =====================
+// ищем персонажа по подстроке в русском ИЛИ английском имени.
+// сначала — те, у кого есть своя карточка; затем — те, кто упоминается только в чужих описаниях.
+function searchCharacters(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return { own: [], mentioned: [] };
+
+  const own = allChars.filter(g => {
+    const ru = g.name.toLowerCase();
+    const en = (EN_NAMES[g.name] || "").toLowerCase();
+    return ru.includes(q) || en.includes(q);
+  });
+
+  const mentioned = EXTRA_MENTIONS.filter(m => {
+    return m.name.toLowerCase().includes(q) || m.en.toLowerCase().includes(q);
+  });
+
+  return { own, mentioned };
+}
+
+// открывает карточку персонажа в списке (для собственных карточек)
+function openOwnCard(godName) {
+  const data = allChars.find(g => g.name === godName);
+  if (!data) return;
+  // ищем DOM-карточку по видимому тексту имени (id зависит от индекса, а не от имени)
+  const cards = Array.from(document.querySelectorAll(".god"));
+  const card = cards.find(c => {
+    const nameEl = c.querySelector(".god-name");
+    return nameEl && nameEl.textContent.trim() === godName;
+  });
+  if (!card) return;
+  const descId = card.id.replace("card-", "");
+  const desc = document.getElementById(descId);
+  desc.classList.add("show");
+  card.classList.add("open");
+  card.scrollIntoView({ behavior: "smooth", block: "center" });
+  card.classList.remove("search-flash");
+  void card.offsetWidth;
+  card.classList.add("search-flash");
+  setTimeout(() => card.classList.remove("search-flash"), 1600);
+}
+
+function renderSearchResults(query) {
+  const box = document.getElementById("searchResults");
+  const { own, mentioned } = searchCharacters(query);
+
+  if (!query.trim()) {
+    box.classList.remove("open");
+    box.innerHTML = "";
+    return;
+  }
+
+  if (own.length === 0 && mentioned.length === 0) {
+    box.innerHTML = `<div class="search-empty">Ничего не найдено</div>`;
+    box.classList.add("open");
+    return;
+  }
+
+  let html = "";
+  own.slice(0, 20).forEach(g => {
+    const en = EN_NAMES[g.name] ? ` (${EN_NAMES[g.name]})` : "";
+    html += `
+      <div class="search-result-item" data-kind="own" data-name="${g.name.replace(/"/g, '&quot;')}">
+        <div class="search-result-name">${g.name}${en}</div>
+        <div class="search-result-meta">${g.role}</div>
+      </div>`;
+  });
+  mentioned.slice(0, 20).forEach(m => {
+    const firstSource = m.sources[0];
+    html += `
+      <div class="search-result-item" data-kind="mention" data-source="${firstSource.replace(/"/g, '&quot;')}">
+        <div class="search-result-name">${m.name} (${m.en})</div>
+        <div class="search-result-meta"><span class="mention-tag">упоминается только в описании:</span> ${m.sources.join(", ")}</div>
+      </div>`;
+  });
+
+  box.innerHTML = html;
+  box.classList.add("open");
+}
+
+const searchInput = document.getElementById("searchInput");
+const searchResultsBox = document.getElementById("searchResults");
+
+searchInput.addEventListener("input", (e) => renderSearchResults(e.target.value));
+searchInput.addEventListener("focus", (e) => { if (e.target.value.trim()) renderSearchResults(e.target.value); });
+
+searchResultsBox.addEventListener("click", (e) => {
+  const item = e.target.closest(".search-result-item");
+  if (!item) return;
+  if (item.dataset.kind === "own") {
+    openOwnCard(item.dataset.name);
+  } else if (item.dataset.kind === "mention") {
+    openOwnCard(item.dataset.source);
+  }
+  searchResultsBox.classList.remove("open");
+  searchInput.value = "";
+});
+
+// закрываем выпадающий список при клике вне поля поиска
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".search-wrap")) {
+    searchResultsBox.classList.remove("open");
+  }
+});
+
 
 // ===================== ВИЗУАЛЬНОЕ ДРЕВО (вкладка 2) — ДИНАМИЧЕСКИЙ ДВИЖОК =====================
 // Дерево строится не вручную, а прямо из реальных полей "parents" всех карточек:
